@@ -1,0 +1,10 @@
+[suricata]
+
+/var/log/suricata/eve.json
+/var/log/suricata/fast.log
+
+[fail2ban]
+/var/log/fail2ban.log
+
+[ufw]
+/var/log/ufw.log
