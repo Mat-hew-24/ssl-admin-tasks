@@ -1,5 +1,0 @@
-for grpquota to be there
-
-add it in fstab alongside usrquota
-
-then do the thing again
