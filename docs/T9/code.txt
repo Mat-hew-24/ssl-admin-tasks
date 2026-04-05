@@ -1,0 +1,25 @@
+tee roles/lab-base/tasks/main.yml << 'EOF'
+- name: Install updates
+  ansible.builtin.apt:
+    update_cache: yes
+    upgrade: 'yes'
+- name: Install tzdata
+  ansible.builtin.apt:
+    name: tzdata
+    state: present
+- name: Set timezone
+  ansible.builtin.file:
+    src: /usr/share/zoneinfo/Asia/Kolkata
+    dest: /etc/localtime
+    state: link
+    force: yes
+- name: Set hostname
+  ansible.builtin.copy:
+    content: "{{ lab_hostname }}"
+    dest: /etc/hostname
+    unsafe_writes: yes
+- name: Install monitoring tools
+  ansible.builtin.apt:
+    name: "{{ monitoring_tools }}"
+    state: present
+EOF

@@ -51,7 +51,7 @@ Once logged in, the first step for system security is to update the system packa
 <br>
 
 **5. Installing Unattended Upgrades**
-[cite_start]To ensure the system always receives the latest security updates automatically, I started by installing the required package using `sudo apt install unattended-upgrades`. [cite: 22]
+To ensure the system always receives the latest security updates automatically, I started by installing the required package using `sudo apt install unattended-upgrades`.
 
 <details>
 <summary> View Screenshot</summary>
@@ -121,7 +121,7 @@ Finally, I configured the `APT::Periodic` parameters. Setting `Update-Package-Li
 ## 2. Enhanced SSH Security
 
 **1. Securing SSH Configuration**
-[cite_start]To lock down the server, I edited the SSH daemon configuration file to disable root login [cite: 25][cite_start], disable password-based authentication [cite: 26][cite_start], and explicitly enable public key authentication[cite: 27]. [cite_start]Additionally, I restricted SSH access to a specific IP range (`172.21.*.*`) for the user `mathew` using the `Match Address` and `AllowUsers` directives[cite: 28].
+To lock down the server, I edited the SSH daemon configuration file to disable root login , disable password-based authentication, and explicitly enable public key authentication. Additionally, I restricted SSH access to a specific IP range (`172.21.*.*`) for the user `mathew` using the `Match Address` and `AllowUsers` directives.
 
 <details>
 <summary> View Screenshot</summary>
@@ -165,7 +165,7 @@ I opened a new terminal session and executed the SSH command to ensure I could s
 <br>
 
 **5. Installing Fail2ban**
-[cite_start]To protect the server against brute-force attacks[cite: 29], I installed `fail2ban` using the command `sudo apt-get install fail2ban`.
+To protect the server against brute-force attacks, I installed `fail2ban` using the command `sudo apt-get install fail2ban`.
 
 <details>
 <summary> View Screenshot</summary>
@@ -209,7 +209,7 @@ Inside the configuration file, I located the `[sshd]` block, set `enabled = true
 <br>
 
 **9. Installing MFA Tools (Optional Task)**
-[cite_start]To complete the optional Multi-Factor Authentication task [cite: 31][cite_start], I installed the Google Authenticator PAM module using `sudo apt install libpam-google-authenticator`[cite: 32].
+To complete the optional Multi-Factor Authentication task , I installed the Google Authenticator PAM module using `sudo apt install libpam-google-authenticator`.
 
 <details>
 <summary> View Screenshot</summary>
@@ -1741,8 +1741,6 @@ WireGuard uses asymmetric key pairs for authentication — each party generates 
 
 ## 8. Docker Fundamentals and Personal Website Deployment
 
-## 8. Docker Fundamentals and Personal Website Deployment
-
 **1. Scaffolding the Portfolio with Vue**
 I initialized the portfolio project using `npm create vue@latest` to scaffold a modern Vue.js application as the base for the personal website.
 
@@ -2010,6 +2008,361 @@ I ran `npm run build` to produce the production `dist/` output, then copied the 
 **25. Setting Ownership and Verifying**
 I set ownership of `/opt/portfolio` to UID/GID `101:101` (the Nginx user inside the container) so it can read the mounted
 
+<br>
+
+## 9. Ansible Automation in Dockerized Lab Environment
+
+**1. Creating a Docker Network**
+I created a dedicated Docker bridge network called `ansible-net` to allow isolated communication between the Ansible control node and target containers.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/1.png">
+
+</details>
+<br>
+
+**2. Setting Up the Task Directory and Target Dockerfile**
+I created a `task9` directory, navigated into it, and opened `target.Dockerfile` in the micro editor to define the target node image.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/2.png">
+
+</details>
+<br>
+
+**3. Writing the Target Dockerfile**
+I wrote the target node Dockerfile based on `ubuntu:22.04`, installing `openssh-server` and `sudo`, creating the `/var/run/sshd` directory, adding an `ansible` user with password `ansible`, granting it sudo access, exposing port 22, and setting `sshd` as the default command.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/3.png">
+
+</details>
+<br>
+
+**4. Opening the Control Dockerfile**
+I opened `control.Dockerfile` in the micro editor to define the Ansible control node image.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/4.png">
+
+</details>
+<br>
+
+**5. Writing the Control Dockerfile**
+I wrote the control node Dockerfile based on `ubuntu:22.04`, installing `ansible` and `openssh-client`, creating an `ansible` user, and setting `bash` as the default command.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/5.png">
+
+</details>
+<br>
+
+**6. Building Both Images**
+I built both Docker images — `ansible-target` from `target.Dockerfile` and `ansible-control` from `control.Dockerfile` — in a single chained command.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/6.png">
+
+</details>
+<br>
+
+**7. Running the Containers**
+I launched two target containers (`target1`, `target2`) and one control container (`control`) in detached mode, all attached to the `ansible-net` network.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/7.png">
+
+</details>
+<br>
+
+**8. Exec-ing into the Control Container**
+I opened an interactive bash shell inside the `control` container using `docker exec`.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/8.png">
+
+</details>
+<br>
+
+**9. Switching to the Ansible User**
+Inside the control container, I switched to the `ansible` user using `su - ansible` to operate under the correct identity for SSH key setup.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/9.png">
+
+</details>
+<br>
+
+**10. Generating an SSH Key Pair**
+I generated an RSA SSH key pair with no passphrase, saving it to `~/.ssh/id_rsa`, to enable passwordless SSH access from the control node to the target nodes.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/10.png">
+
+</details>
+<br>
+
+**11. Copying SSH Keys to Target Nodes**
+I copied the control node's public SSH key to both `target1` and `target2` using `ssh-copy-id`, authenticating with the `ansible` password to enable passwordless SSH access.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/11.png">
+
+</details>
+<br>
+
+**12. Creating the Ansible Inventory**
+I wrote an inventory file at `~/inventory` using a heredoc, defining a `[targets]` group containing `target1` and `target2`.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/12.png">
+
+</details>
+<br>
+
+**13. Writing the First Playbook (pb1.yml)**
+I created `pb1.yml` targeting the `[targets]` group with three tasks: a ping check, a disk space report using `df -h` with the output registered and debugged, and an uptime check similarly registered and debugged.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/13.png">
+
+</details>
+<br>
+
+**14. Running the First Playbook**
+I executed `pb1.yml` against the inventory to verify connectivity and gather disk and uptime information from both target nodes.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/14.png">
+
+</details>
+<br>
+
+**15. Installing Micro and Opening pb2.yml**
+I installed the `micro` editor via `sudo apt install` and immediately opened `pb2.yml` for editing.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/15.png">
+
+</details>
+<br>
+
+**16. Writing the Second Playbook (pb2.yml)**
+I wrote a comprehensive lab configuration management playbook targeting the `[targets]` group with `become: yes`. It defines variables for packages, bash aliases, vim settings, and SSH hardening parameters, then runs tasks covering system updates, package installation with conditional lab-only extras, bash and vim configuration, SSH hardening via `lineinfile`, file permission hardening, a secure temp workspace, and final verification of all installed packages.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/16.png">
+
+</details>
+<br>
+
+**17. Running the Second Playbook**
+I ran `pb2.yml` with `--forks=1` for sequential execution and `--ask-become-pass` to supply the sudo password for privilege escalation on the target nodes.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/17.png">
+
+</details>
+<br>
+
+**18. Creating Ansible Role Directory Structure**
+I created the standard role directory layout for two roles — `lab-base` and `student-workstation` — each with `tasks`, `handlers`, `defaults`, `vars`, and `templates` subdirectories.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/18.png">
+
+</details>
+<br>
+
+**19. Writing the lab-base Role Defaults**
+I wrote `roles/lab-base/defaults/main.yml` with default variables: timezone set to `Asia/Kolkata`, `lab_hostname` set to `lab-target`, and `monitoring_tools` listing `netdata`.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/19.png">
+
+</details>
+<br>
+
+**20. Writing the lab-base Role Tasks**
+I wrote `roles/lab-base/tasks/main.yml` with five tasks: updating and upgrading packages, installing `tzdata`, symlinking the timezone to `/etc/localtime`, writing the hostname from the `lab_hostname` variable to `/etc/hostname`, and installing the packages listed in `monitoring_tools`.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/20.png">
+
+</details>
+<br>
+
+**21. Writing the lab-base Role Handler**
+I wrote `roles/lab-base/handlers/main.yml` with a single handler to restart the `cron` service using `ansible.builtin.service`.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/21.png">
+
+</details>
+<br>
+
+**22. Writing the student-workstation Role Defaults**
+I wrote `roles/student-workstation/defaults/main.yml` defining `student_user` as `student`, `student_password` as `student@ansible`, and a `dev_tools` list containing `gcc`, `python3`, `python3-pip`, `nodejs`, and `npm`.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/22.png">
+
+</details>
+<br>
+
+**23. Writing the student-workstation Role Vars**
+I wrote `roles/student-workstation/vars/main.yml` setting the `shell` variable to `/bin/bash`.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/23.png">
+
+</details>
+<br>
+
+**24. Writing the bashrc Jinja2 Template**
+I wrote `roles/student-workstation/templates/bashrc.j2` defining a custom PS1 prompt, `ll` and `gs` aliases, and a PATH export that includes the student user's `.local/bin` directory using the `student_user` variable.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/24.png">
+
+</details>
+<br>
+
+**25. Writing the student-workstation Role Tasks**
+I wrote `roles/student-workstation/tasks/main.yml` with three tasks: creating the student user account with a SHA-512 hashed password, installing the `dev_tools` packages, and deploying the `bashrc.j2` template to the student's home directory with `0644` permissions.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/25.png">
+
+</details>
+<br>
+
+**26. Writing the Third Playbook (pb3.yml)**
+I wrote `pb3.yml` as a single play targeting `[targets]` with `become: yes`, applying both the `lab-base` and `student-workstation` roles.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/26.png">
+
+</details>
+<br>
+
+**27. Recreating Target Containers with Privileged Mode**
+I stopped and removed the original target containers, then relaunched them with `--privileged` and an explicit `/usr/sbin/sshd -D` entrypoint to allow `sshd` and service management to function correctly.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/27.png">
+
+</details>
+<br>
+
+**28. Deploying SSH Authorized Keys to Target Containers**
+From the host, I created `/root/.ssh` on both targets, copied the ansible user's public key from `/tmp/ansible.pub` into each container's `authorized_keys`, and set permissions to `600`.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/28.png">
+
+</details>
+<br>
+
+**29. Updating the Inventory to Use Root**
+I updated `~/inventory` to set `ansible_user=root` for both `target1` and `target2`, matching the key-based auth configured on the containers.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/29.png">
+
+</details>
+<br>
+
+**30. Enabling Root Login and Pubkey Auth on Targets**
+I appended `PermitRootLogin yes` and `PubkeyAuthentication yes` to `/etc/ssh/sshd_config` on both target containers via `docker exec`, then restarted both containers to apply the SSH configuration changes.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/30.png">
+
+</details>
+<br>
+
+**31. Fixing Ownership of Authorized Keys**
+I set the owner and group of `/root/.ssh/authorized_keys` to `root:root` on both target containers to satisfy SSH's strict permission requirements.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/31.png">
+
+</details>
+<br>
+
+**32. Running pb3.yml Twice to Verify Idempotency**
+I ran `pb3.yml` against the inventory twice in succession using `--ask-become-pass`. Running the playbook a second time with no changes to the system confirms idempotency — all tasks should report `ok` rather than `changed` on the second run.
+
+<details>
+<summary> View Screenshot</summary>
+
+<img src="docs/T9/32.png">
+
+</details>
+<br>
 <br>
 
 # SSH Port Change Lab — Azure VM
